@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 
 use bevy::prelude::*;
+use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::PrimitiveTopology;
 use bevy::render::view::RenderLayers;
 use bevy::pbr::NotShadowCaster;
@@ -74,7 +75,7 @@ pub fn main_grid_mesher_untracked(
 ) {
     for (entity, grid, render_layers, children) in query_parent.iter() {
         let (vertices, _) = main_grid_vertices_and_size(grid, &GridAlignment::default());
-        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+        let mut mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
         if let Some(children) = children {
@@ -115,7 +116,7 @@ pub fn main_grid_mesher_tracked(
         for alignment in [GridAlignment::X, GridAlignment::Z] {
             vertices.extend(&GridAxis::create_single_axis(size, alignment).map(|vertex| tracked.alignment.shift_vec3(vertex)));
         }
-        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+        let mut mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
         if let Some(children) = children {
@@ -142,7 +143,7 @@ pub fn main_grid_mesher_tracked(
             }
             if let Some(color) = axis.and_then(|axis| axis.get_by_alignment(&tracked.alignment)) {
                 let vertices = GridAxis::create_single_axis(size, tracked.alignment).to_vec();
-                let mut axis_mesh = Mesh::new(PrimitiveTopology::LineList);
+                let mut axis_mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
                 axis_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
                 let mut commands = children.spawn((
                     GridChild,
@@ -192,7 +193,7 @@ pub fn sub_grid_mesher(
             .flat_map(|offset| line_vertices(size, offset, SUB_GRID_VERTICAL_OFFSET))
             .map(|vertex| alignment.shift_vec3(vertex))
             .collect::<Vec<_>>();
-        let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+        let mut mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
         if let Some(children) = children {
@@ -253,7 +254,7 @@ pub fn grid_axis_mesher(
                 let (used, unused) = axis.create_axis();
                 common_axis.extend(&unused);
                 for (alignment, color) in used {
-                    let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+                    let mut mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
                     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, GridAxis::create_single_axis(size, alignment).to_vec());
                     let mut commands = children.spawn((
                         GridAxisChild,
@@ -279,7 +280,7 @@ pub fn grid_axis_mesher(
                     .into_iter()
                     .flat_map(|alignment| GridAxis::create_single_axis(size, alignment))
                     .collect::<Vec<_>>();
-                let mut mesh = Mesh::new(PrimitiveTopology::LineList);
+                let mut mesh = Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::all());
                 mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
                 let mut commands = children.spawn((
                     GridAxisChild,
